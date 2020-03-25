@@ -12,6 +12,6 @@
         "ext-json": "*"
     },
     "autoload": {
-        "psr-4": { "": "src/" }
+        "psr-4": { "Anton\\": "src/" }
     }
 }
