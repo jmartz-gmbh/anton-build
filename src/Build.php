@@ -83,7 +83,7 @@ class Build
         $this->pipeline = $pipeline;
         $this->branch = $this->getBranch();
         $this->workdir = 'workspace/projects/'.$this->project;
-        $this->helper = new \Anton\Helper();
+        $this->helper = new \Anton\Config();
         $this->config = $this->helper->getProjectConfig($project);
         $this->logfolder = 'storage/logs/'.$this->project;
 
