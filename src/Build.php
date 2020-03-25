@@ -237,7 +237,7 @@ class Build
         unset($config['servers']);
         unset($config['pipelines']);
 
-        file_put_contents('workspace/projects/'.$this->project.'/anton-config.json', \json_encode($this->config, true));
+        file_put_contents('workspace/projects/'.$this->project.'/anton-config.json', \json_encode($config, true));
     }
 
     public function getLogFileContent(string $key)
