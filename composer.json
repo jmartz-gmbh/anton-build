@@ -1,0 +1,17 @@
+{
+    "name": "anton/build",
+    "description": "Anton Build",
+    "type": "anton-module",
+    "license": "MIT",
+    "authors": [{
+        "name": "Jonathan Martz",
+        "email": "anton@jmartz.gmbh",
+        "homepage": "https://www.jmartz.de/"
+    }],
+    "require": {
+        "ext-json": "*"
+    },
+    "autoload": {
+        "psr-4": { "": "src/" }
+    }
+}
