@@ -206,6 +206,37 @@ class Build
 
     public function copyProjectConfig()
     {
+        $config = $this->config;
+        $branch = exec('git rev-parse --abbrev-ref HEAD');
+
+        foreach ($config['pipelines'] as $key => $value) {
+            if($value['branch'] == $branch){
+                $config['pipeline'] = $value;
+                $config['pipeline']['name'] = $key;
+                $server = $value['server'];
+            }
+        }
+
+        if(empty($server)){
+            throw new \Exception('Pipeline has no Server.');
+        }
+
+        $found = false;
+
+        foreach ($config['servers'] as $number => $item) {
+            if($number == $server){
+                $found = true;
+                $config['server'] = $item;
+            }
+        }
+
+        if(!$found){
+            throw new \Exception('Server not found.');
+        }
+
+        unset($config['servers']);
+        unset($config['pipelines']);
+
         file_put_contents('workspace/projects/'.$this->project.'/anton-config.json', \json_encode($this->config, true));
     }
 
@@ -226,7 +257,7 @@ class Build
     {
         $log = $this->getLogFileContent($key);
         if (strpos($log, '[error]') !== false) {
-            throw new \Exception('Exception thrown while deployment.');
+            throw new \Exception('Exception thrown while deployment. (Step: '.$key.')');
         }
     }
 }
