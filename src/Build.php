@@ -79,25 +79,30 @@ class Build
 
     public function __construct(string $project, string $pipeline)
     {
-        $this->project = $project;
-        $this->pipeline = $pipeline;
-        $this->branch = $this->getBranch();
-        $this->workdir = 'workspace/projects/'.$this->project;
-        $this->helper = new \Anton\Config();
-        $this->config = $this->helper->getProjectConfig($project);
-        $this->logfolder = 'storage/logs/'.$this->project;
+        try {
+            $this->project = $project;
+            $this->pipeline = $pipeline;
+            $this->branch = $this->getBranch();
+            $this->workdir = 'workspace/projects/'.$this->project;
+            $this->helper = new \Anton\Config();
+            $this->config = $this->helper->getProjectConfig($project);
+            $this->logfolder = 'storage/logs/'.$this->project;
 
-        $this->createLogFolder();
-        $this->initSteps();
+            $this->createLogFolder();
+            $this->initSteps();
+        } catch (\Exception $e) {
+            echo $e->getMessage().PHP_EOL;
+            exit(0);
+        }
     }
 
     public function run()
     {
-        try { 
+        try {
             $this->prepare();
             $this->checkSteps();
             $this->executeSteps();
-            $this->finish();              
+            $this->finish();
         } catch (\Exception $e) {
             echo $e->getMessage().PHP_EOL;
             exit(0);
@@ -210,27 +215,27 @@ class Build
         $branch = exec('git rev-parse --abbrev-ref HEAD');
 
         foreach ($config['pipelines'] as $key => $value) {
-            if($value['branch'] == $branch){
+            if ($value['branch'] == $branch) {
                 $config['pipeline'] = $value;
                 $config['pipeline']['name'] = $key;
                 $server = $value['server'];
             }
         }
 
-        if(empty($server)){
+        if (empty($server)) {
             throw new \Exception('Pipeline has no Server.');
         }
 
         $found = false;
 
         foreach ($config['servers'] as $number => $item) {
-            if($number == $server){
+            if ($number == $server) {
                 $found = true;
                 $config['server'] = $item;
             }
         }
 
-        if(!$found){
+        if (!$found) {
             throw new \Exception('Server not found.');
         }
 
@@ -249,7 +254,7 @@ class Build
     {
         $log = $this->getLogFileContent($key);
         if (strpos($log, 'Exit code ') !== false) {
-            throw new \Exception('Exit while deployment.');
+            throw new \Exception('Exit while deployment.('.$key.')');
         }
     }
 
