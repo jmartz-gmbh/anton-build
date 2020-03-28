@@ -153,6 +153,9 @@ class Build
 
     public function initSteps()
     {
+        if(empty($this->config['steps'])){
+            throw new \Exception('Config has no steps. ('.$this->project.')');
+        }
         foreach ($this->config['steps'] as $step) {
             $this->steps[] = $step;
         }
@@ -169,7 +172,7 @@ class Build
         $log = file_get_contents($this->getLogFolder().'/'.$name.'.log');
         $check =  trim(trim($log, PHP_EOL));
         if ($check !== 'success') {
-            throw new \Exception('Step failed. ('.$key.')');
+            throw new \Exception('Step failed. ('.$this->project.')');
         }
     }
 
