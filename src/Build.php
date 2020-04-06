@@ -27,7 +27,6 @@ class Build
             $this->hasLogExit($value['identifier']);
             $this->hasLogException($value['identifier']);
             // @todo catch ssh errors ?
-            $this->saveLog($value['identifier']);
         }
     }
 
@@ -144,11 +143,6 @@ class Build
     public function executeRoboCommand(string $command, $logfile)
     {
         exec('cd '.$this->workdir.' && robo '.$command . ' 2>&1 | tee '.$logfile);
-    }
-
-    public function saveLog(string $key)
-    {
-        file_put_contents($this->logfolder.'/'.$key.'.log', \json_encode($this->getLogFilename($key), true));
     }
 
     public function initSteps()
