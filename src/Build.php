@@ -20,14 +20,12 @@ class Build
     public function executeSteps()
     {
         foreach ($this->steps as $key => $value) {
-            $log = new Log($value['identifier']);
-            $log->setProject($this->project);
-            $this->executeRoboCommand($value['command']);
-            $log->addMessage('Robo Step executed ('.$value['identifier'].')')->save();
+            // @todo use step key for logile
+            $logfile = $this->getLogFilename($value['identifier']);
+            $this->executeRoboCommand($value['command'], $logfile);
+            $this->existsLogfile($value['identifier']);
             $this->hasLogExit($value['identifier']);
-            $log->addMessage('Robo Step has no Exit ('.$value['identifier'].')')->save();
             $this->hasLogException($value['identifier']);
-            $log->addMessage('Robo Step has no Exception ('.$value['identifier'].')')->save();
             // @todo catch ssh errors ?
         }
     }
@@ -59,15 +57,15 @@ class Build
 
     public function prepare()
     {
-        $log = new Log('history');
-        $log->setProject($this->project);
         $this->hasPipeline();
         $this->copyProjectConfig();
-        $log->addMessage('Build start ('.$value['identifier'].')')->save();
+        // $this->addLog('Build started '.time());
+
         $this->checkoutBranch();
         $this->composerInstallRobo();
+
+        // @todo add commits to log file for builds
         $this->updateRepo();
-        $log->addMessage('Build prepared ('.$value['identifier'].')')->save();
     }
 
     public function finish()
@@ -91,11 +89,6 @@ class Build
 
             $this->createLogFolder();
             $this->initSteps();
-
-            $this->log = new Log('history');
-            $this->log->setProject($project)->save();
-            $this->log->setPipeline($pipeline)->save();
-            $this->log->addMessage('Init Project')->save();
         } catch (\Exception $e) {
             echo $e->getMessage().PHP_EOL;
             exit(0);
@@ -107,10 +100,8 @@ class Build
         try {
             $this->prepare();
             $this->checkSteps();
-            $this->log->addMessage('Start Steps')->save();
             $this->executeSteps();
             $this->finish();
-            $this->log->addMessage('Finished Project')->save();
         } catch (\Exception $e) {
             echo $e->getMessage().PHP_EOL;
             exit(0);
@@ -149,10 +140,9 @@ class Build
         }
     }
 
-    public function executeRoboCommand(string $command)
+    public function executeRoboCommand(string $command, $logfile)
     {
-        // @todo log result
-        exec('cd '.$this->workdir.' && robo '.$command . ' 2>&1');
+        exec('cd '.$this->workdir.' && robo '.$command . ' 2>&1 | tee '.$logfile);
     }
 
     public function initSteps()
@@ -222,7 +212,7 @@ class Build
         $branch = exec('git rev-parse --abbrev-ref HEAD');
 
         foreach ($config['pipelines'] as $key => $value) {
-            if ($value['branch'] == $branch) {
+            if ($key == $this->pipeline) {
                 $config['pipeline'] = $value;
                 $config['pipeline']['name'] = $key;
                 $server = $value['server'];
