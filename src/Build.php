@@ -1,4 +1,5 @@
 <?php
+
 namespace Anton;
 
 class Build
@@ -32,12 +33,12 @@ class Build
 
     public function checkoutBranch()
     {
-        exec('cd '.$this->workdir.' && git checkout '.$this->branch. ' 2>&1');
+        exec('cd ' . $this->workdir . ' && git checkout ' . $this->branch . ' 2>&1');
     }
 
     public function composerInstallRobo()
     {
-        exec('cd '.$this->workdir.' && cd .robo && composer install 2>&1');
+        exec('cd ' . $this->workdir . ' && cd .robo && composer install 2>&1');
     }
 
     public function getWorkDir()
@@ -47,12 +48,12 @@ class Build
 
     public function updateRepo()
     {
-        exec('cd '.$this->workdir.' && git pull'. ' 2>&1');
+        exec('cd ' . $this->workdir . ' && git pull' . ' 2>&1');
     }
 
     public function loadCommits()
     {
-        $this->commits = exec('cd '.$this->workdir.' && git rev-list --count '.$this->branch);
+        $this->commits = exec('cd ' . $this->workdir . ' && git rev-list --count ' . $this->branch);
     }
 
     public function prepare()
@@ -74,6 +75,7 @@ class Build
         $this->checkProjectLog('status');
         $this->setStatus('success');
         $this->save();
+        echo 'Project trigger successfull.(' . $this->project . ' - ' . $this->pipeline . ')' . PHP_EOL;
     }
 
     public function __construct(string $project, string $pipeline)
@@ -82,15 +84,15 @@ class Build
             $this->project = $project;
             $this->pipeline = $pipeline;
             $this->branch = $this->getBranch();
-            $this->workdir = 'workspace/projects/'.$this->project;
+            $this->workdir = 'workspace/projects/' . $this->project;
             $this->helper = new \Anton\Config();
             $this->config = $this->helper->getProjectConfig($project);
-            $this->logfolder = 'storage/logs/'.$this->project;
+            $this->logfolder = 'storage/logs/' . $this->project;
 
             $this->createLogFolder();
             $this->initSteps();
         } catch (\Exception $e) {
-            echo $e->getMessage().PHP_EOL;
+            echo $e->getMessage() . PHP_EOL;
             exit(0);
         }
     }
@@ -103,7 +105,7 @@ class Build
             $this->executeSteps();
             $this->finish();
         } catch (\Exception $e) {
-            echo $e->getMessage().PHP_EOL;
+            echo $e->getMessage() . PHP_EOL;
             exit(0);
         }
     }
@@ -119,7 +121,7 @@ class Build
 
     public function createLogFolder()
     {
-        exec('mkdir -p '.$this->logfolder);
+        exec('mkdir -p ' . $this->logfolder);
     }
 
     public function getLogFolder()
@@ -129,26 +131,26 @@ class Build
 
     public function getLogFilename(string $key)
     {
-        return '../../../'.$this->getLogFolder().'/'.$key.'.log';
+        return '../../../' . $this->getLogFolder() . '/' . $key . '.log';
     }
 
     public function existsLogfile(string $key)
     {
-        $logfile = $this->workdir.'/'.$this->getLogFilename($key);
+        $logfile = $this->workdir . '/' . $this->getLogFilename($key);
         if (!file_exists($logfile)) {
-            throw new \Exception('Log not created. ('.$this->workdir.'/'.$logfile.')');
+            throw new \Exception('Log not created. (' . $this->workdir . '/' . $logfile . ')');
         }
     }
 
     public function executeRoboCommand(string $command, $logfile)
     {
-        exec('cd '.$this->workdir.' && robo '.$command . ' 2>&1 | tee '.$logfile);
+        exec('cd ' . $this->workdir . ' && robo ' . $command . ' 2>&1 | tee ' . $logfile);
     }
 
     public function initSteps()
     {
-        if(empty($this->config['steps'])){
-            throw new \Exception('Config has no steps. ('.$this->project.')');
+        if (empty($this->config['steps'])) {
+            throw new \Exception('Config has no steps. (' . $this->project . ')');
         }
         foreach ($this->config['steps'] as $step) {
             $this->steps[] = $step;
@@ -157,16 +159,16 @@ class Build
 
     public function executeRoboCheckBuild()
     {
-        exec('cd '.$this->workdir.' && robo check:build 2>&1 | tee ../../../storage/logs/'.$this->project.'/status.log');
+        exec('cd ' . $this->workdir . ' && robo check:build 2>&1 | tee ../../../storage/logs/' . $this->project . '/status.log');
     }
 
     public function checkProjectLog(string $name)
     {
-        $logfolder = 'storage/logs/'.$this->project;
-        $log = file_get_contents($this->getLogFolder().'/'.$name.'.log');
+        $logfolder = 'storage/logs/' . $this->project;
+        $log = file_get_contents($this->getLogFolder() . '/' . $name . '.log');
         $check =  trim(trim($log, PHP_EOL));
         if ($check !== 'success') {
-            throw new \Exception('Step failed. ('.$this->project.')');
+            throw new \Exception('Step failed. (' . $this->project . ')');
         }
     }
 
@@ -188,11 +190,11 @@ class Build
         $check = !empty($this->config['pipelines'][$this->pipeline]);
 
         if (!$check) {
-            throw new \Exception('Pipeline unknown. ('.$pipeline.')');
+            throw new \Exception('Pipeline unknown. (' . $pipeline . ')');
         }
     }
 
-    public function getBranch():string
+    public function getBranch(): string
     {
         if (!empty($this->config['pipelines'][$this->pipeline])) {
             return $this->config['pipelines'][$this->pipeline];
@@ -239,19 +241,19 @@ class Build
         unset($config['servers']);
         unset($config['pipelines']);
 
-        file_put_contents('workspace/projects/'.$this->project.'/anton-config.json', \json_encode($config, true));
+        file_put_contents('workspace/projects/' . $this->project . '/anton-config.json', \json_encode($config, true));
     }
 
     public function getLogFileContent(string $key)
     {
-        return trim(trim(file_get_contents($this->workdir.'/'.$this->getLogFilename($key)), PHP_EOL));
+        return trim(trim(file_get_contents($this->workdir . '/' . $this->getLogFilename($key)), PHP_EOL));
     }
 
     public function hasLogExit(string $key)
     {
         $log = $this->getLogFileContent($key);
         if (strpos($log, 'Exit code ') !== false) {
-            throw new \Exception('Exit while deployment.('.$key.')');
+            throw new \Exception('Exit while deployment.(' . $key . ')');
         }
     }
 
@@ -259,7 +261,7 @@ class Build
     {
         $log = $this->getLogFileContent($key);
         if (strpos($log, '[error]') !== false) {
-            throw new \Exception('Exception thrown while deployment. (Step: '.$key.')');
+            throw new \Exception('Exception thrown while deployment. (Step: ' . $key . ')');
         }
     }
 }
