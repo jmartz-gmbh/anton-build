@@ -144,7 +144,7 @@ class Build
 
     public function executeRoboCommand(string $command, $logfile)
     {
-        echo $logfile.PHP_EOL;
+        echo 'Robo: '.$command.PHP_EOL;
         exec('cd ' . $this->workdir . ' && robo ' . $command . ' 2>&1 | tee ' . $logfile);
     }
 
