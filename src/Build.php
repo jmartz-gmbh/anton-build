@@ -191,7 +191,7 @@ class Build
         $check = !empty($this->config['pipelines'][$this->pipeline]);
 
         if (!$check) {
-            throw new \Exception('Pipeline unknown. (' . $pipeline . ')');
+            throw new \Exception('Pipeline unknown. (' . $this->pipeline . ')');
         }
     }
 
