@@ -83,10 +83,10 @@ class Build
         try {
             $this->project = $project;
             $this->pipeline = $pipeline;
-            $this->branch = $this->getBranch();
             $this->workdir = 'workspace/projects/' . $this->project;
             $this->helper = new \Anton\Config();
             $this->config = $this->helper->getProjectConfig($project);
+            $this->branch = $this->getBranch();
             $this->logfolder = 'storage/logs/' . $this->project;
 
             $this->createLogFolder();
@@ -197,8 +197,8 @@ class Build
 
     public function getBranch(): string
     {
-        if (!empty($this->config['pipelines'][$this->pipeline])) {
-            return $this->config['pipelines'][$this->pipeline];
+        if (!empty($this->config['pipelines'][$this->pipeline]['branch'])) {
+            return $this->config['pipelines'][$this->pipeline]['branch'];
         }
 
         return 'master';
