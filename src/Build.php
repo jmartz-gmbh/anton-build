@@ -239,6 +239,9 @@ class Build
             throw new \Exception('Server not found.');
         }
 
+        // add Timestamp
+        $config['timestamp'] = date('d-m-Y-H-i');
+
         unset($config['servers']);
         unset($config['pipelines']);
 
