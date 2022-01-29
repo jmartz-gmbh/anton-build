@@ -36,11 +36,6 @@ class Build
         exec('cd ' . $this->workdir . ' && git checkout ' . $this->branch . ' 2>&1');
     }
 
-    public function composerInstallRobo()
-    {
-        exec('cd ' . $this->workdir . ' && cd .robo && composer install 2>&1');
-    }
-
     public function getWorkDir()
     {
         return $this->workdir;
@@ -63,7 +58,6 @@ class Build
         // $this->addLog('Build started '.time());
 
         $this->checkoutBranch();
-        $this->composerInstallRobo();
 
         // @todo add commits to log file for builds
         $this->updateRepo();
